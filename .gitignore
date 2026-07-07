@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environment
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Local configuration
+config/config.local.yaml
+.env
+.env.*
+
+# Secrets
+*.pem
+*.key
+*.crt
+config/config.yaml
+
+# OS
+.DS_Store
+Thumbs.db

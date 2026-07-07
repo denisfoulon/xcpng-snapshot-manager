@@ -1,0 +1,23 @@
+application:
+
+  name: XCP-ng Snapshot Manager
+
+logging:
+
+  level: INFO
+
+provider:
+
+  type: xo
+
+xo:
+
+  url: https://xoa.domain/
+
+  username: admin@xenorchestra.local
+
+  password: yourpassword
+
+report:
+
+  console: true
