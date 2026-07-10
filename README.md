@@ -45,7 +45,7 @@ Verify
 
 Current release:
 
-**v0.0.3**
+**v0.0.4**
 
 Implemented:
 
@@ -55,6 +55,7 @@ Implemented:
 * Execution engine
 * Modular architecture
 * Check discovery engine
+* Pool, host, VM, snapshot and Storage Repository inventory
 
 ---
 

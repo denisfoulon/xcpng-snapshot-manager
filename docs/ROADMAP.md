@@ -20,11 +20,13 @@
 - [x] Provider disconnection
 
 ## v0.0.4 - Inventory
-- [ ] Virtual Machines
-- [ ] Snapshots
-- [ ] Storage Repositories
-- [ ] Inventory models
-- [ ] Console inventory report
+- [x] Pools
+- [x] Hosts
+- [x] Virtual Machines
+- [x] Snapshots
+- [x] Storage Repositories
+- [x] Inventory models
+- [x] Console inventory report
 
 ## v0.1.0 - Compliance
 - [ ] Snapshot age

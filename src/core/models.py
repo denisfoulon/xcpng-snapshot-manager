@@ -29,6 +29,24 @@ class CheckStatus(str, Enum):
 # ---------------------------------------------------------------------------
 
 @dataclass
+class Pool:
+    """Represents an XCP-ng pool."""
+
+    uuid: str = ""
+    name: str = ""
+
+
+@dataclass
+class Host:
+    """Represents an XCP-ng host."""
+
+    uuid: str = ""
+    name: str = ""
+    address: str = ""
+    enabled: bool = False
+
+
+@dataclass
 class Snapshot:
     """Represents a VM snapshot."""
 
@@ -68,6 +86,8 @@ class StorageRepository:
 class Inventory:
     """Infrastructure inventory."""
 
+    pools: List[Pool] = field(default_factory=list)
+    hosts: List[Host] = field(default_factory=list)
     snapshots: List[Snapshot] = field(default_factory=list)
     virtual_machines: List[VirtualMachine] = field(default_factory=list)
     storage_repositories: List[StorageRepository] = field(default_factory=list)

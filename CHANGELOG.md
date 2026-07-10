@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.0.4
+
+### Added
+
+- Xen Orchestra inventory collection for pools, hosts, virtual machines, snapshots and Storage Repositories.
+- Console inventory summary.
+
+### Changed
+
+- The engine now collects inventory between provider connection and disconnection.
+
 ## v0.0.3
 
 ### Added
