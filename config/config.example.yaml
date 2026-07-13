@@ -1,24 +1,18 @@
 application:
-
   name: XCP-ng Snapshot Manager
 
 logging:
-
   level: INFO
 
 provider:
-
   type: xo
 
 xo:
-
   # The client accepts either the XO root URL or this REST API URL.
   url: https://xoa.domain/rest/v0
-
   username: admin@xenorchestra.local
-
   password: yourpassword
+  verify_ssl: true
 
 report:
-
   console: true
