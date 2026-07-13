@@ -8,10 +8,14 @@ import yaml
 
 from core.config_models import (
     ApplicationConfig,
+    CompliancePolicies,
     Config,
     LoggingConfig,
     ProviderConfig,
     ReportConfig,
+    SnapshotAgePolicy,
+    SnapshotCountPolicy,
+    StorageRepositoryPolicy,
     XOConfig,
 )
 
@@ -34,6 +38,20 @@ class ConfigLoader:
 
             data = yaml.safe_load(stream)
 
+        # Load policies if present, otherwise use defaults
+        policies_data = data.get("policies", {})
+        policies = CompliancePolicies(
+            snapshot_age=SnapshotAgePolicy(
+                **policies_data.get("snapshot_age", {})
+            ),
+            snapshot_count=SnapshotCountPolicy(
+                **policies_data.get("snapshot_count", {})
+            ),
+            storage_repository=StorageRepositoryPolicy(
+                **policies_data.get("storage_repository", {})
+            ),
+        )
+
         return Config(
             application=ApplicationConfig(
                 **data["application"]
@@ -50,4 +68,5 @@ class ConfigLoader:
             report=ReportConfig(
                 **data["report"]
             ),
+            policies=policies,
         )

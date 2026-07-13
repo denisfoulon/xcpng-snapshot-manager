@@ -29,8 +29,25 @@
 - [x] Console inventory report
 
 ## v0.1.0 - Compliance
-- [ ] Snapshot age
-- [ ] Snapshot count
-- [ ] SR usage
-- [ ] Policies
-- [ ] Risk score
+- [x] Snapshot age
+- [x] Snapshot count
+- [x] SR usage
+- [x] Policies
+- [x] Risk score
+
+## v0.2.0 - Reporting (Planned)
+- [ ] JSON export
+- [ ] HTML reports
+- [ ] Email notifications
+- [ ] Slack/Teams integration
+
+## v0.3.0 - Remediation (Planned)
+- [ ] Delete expired snapshots
+- [ ] Blacklist support
+- [ ] Dry-run mode
+- [ ] Storage reclaim
+
+## v1.0.0 - First Stable Release
+- [ ] Full test coverage
+- [ ] Documentation
+- [ ] Performance optimization
