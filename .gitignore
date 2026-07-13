@@ -28,3 +28,13 @@ config/config.yaml
 # OS
 .DS_Store
 Thumbs.db
+
+# Test reports
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build
+build/
+dist/
+*.egg-info/
