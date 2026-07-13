@@ -16,3 +16,24 @@ xo:
 
 report:
   console: true
+
+# Compliance Policies Configuration
+# These define the thresholds for compliance checks
+policies:
+  snapshot_age:
+    enabled: true
+    max_age_days: 30
+    warning_days: 25
+    severity: HIGH
+
+  snapshot_count:
+    enabled: true
+    max_snapshots_per_vm: 5
+    warning_count: 4
+    severity: MEDIUM
+
+  storage_repository:
+    enabled: true
+    max_usage_percent: 80.0
+    warning_percent: 70.0
+    severity: CRITICAL
