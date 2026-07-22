@@ -5,6 +5,7 @@ Core execution engine.
 from core.discovery import CheckDiscovery
 from core.models import Inventory
 from providers.xo_provider import XOProvider
+from reports.console import ConsoleInventoryReport
 
 class Engine:
     """Main execution engine."""
@@ -12,7 +13,7 @@ class Engine:
     def __init__(self, config) -> None:
         self.config = config
         self.inventory = Inventory()
-        self.discovery = CheckDiscovery()
+        self.discovery = CheckDiscovery(config.compliance)
         self.provider = None
 
     def run(self):
@@ -32,24 +33,30 @@ class Engine:
         self.verify()
 
     def observe(self):
-        print("No inventory provider configured.")
-
-    def observe(self):
         print("Loading provider.................... ", end="")
         self.provider = XOProvider(
             url=self.config.xo.url,
             username=self.config.xo.username,
             password=self.config.xo.password,
-            verify_ssl=False,
+            verify_ssl=self.config.xo.verify_ssl,
         )
 
         print("OK")
         print("Connecting.......................... ", end="")
         self.provider.connect()
         print("OK")
-        print("Disconnecting....................... ", end="")
-        self.provider.disconnect()
-        print("OK")
+
+        try:
+            print("Collecting inventory................ ", end="")
+            self.inventory = self.provider.collect()
+            print("OK")
+        finally:
+            print("Disconnecting....................... ", end="")
+            self.provider.disconnect()
+            print("OK")
+
+        if self.config.report.console:
+            ConsoleInventoryReport().display(self.inventory)
 
     def evaluate(self):
         checks = self.discovery.discover()
