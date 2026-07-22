@@ -20,15 +20,26 @@
 - [x] Provider disconnection
 
 ## v0.0.4 - Inventory
-- [ ] Virtual Machines
-- [ ] Snapshots
-- [ ] Storage Repositories
-- [ ] Inventory models
-- [ ] Console inventory report
+- [x] Pools
+- [x] Hosts
+- [x] Virtual Machines
+- [x] Snapshots
+- [x] Storage Repositories
+- [x] Inventory models
+- [x] Console inventory report
 
-## v0.1.0 - Compliance
-- [ ] Snapshot age
-- [ ] Snapshot count
-- [ ] SR usage
+## v0.0.5 - Compliance
+- [x] Snapshot age
+- [x] Snapshot count
+- [x] SR usage
+- [ ] Policies
+- [ ] Risk score
+
+## v0.0.6 - Reporting
+- [x] Rich console output
+- [x] JSON export
+- [x] HTML report
+
+## v0.1.0 - Advanced Compliance
 - [ ] Policies
 - [ ] Risk score

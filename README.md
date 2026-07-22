@@ -45,7 +45,7 @@ Verify
 
 Current release:
 
-**v0.0.3**
+**v0.0.6**
 
 Implemented:
 
@@ -55,6 +55,9 @@ Implemented:
 * Execution engine
 * Modular architecture
 * Check discovery engine
+* Pool, host, VM, snapshot and Storage Repository inventory
+* Configurable snapshot age, snapshot count and Storage Repository usage checks
+* Console, JSON and HTML reporting
 
 ---
 
@@ -65,9 +68,9 @@ Implemented:
 | v0.0.1  | ✅      | Bootstrap                |
 | v0.0.2  | ✅      | Configuration            |
 | v0.0.3  | ✅      | Provider connection      |
-| v0.0.4  | 🚧     | Infrastructure inventory |
-| v0.0.5  | ⏳      | Compliance checks        |
-| v0.0.6  | ⏳      | Reporting                |
+| v0.0.4  | ✅      | Infrastructure inventory |
+| v0.0.5  | ✅      | Compliance checks        |
+| v0.0.6  | ✅      | Reporting                |
 | v0.0.7  | ⏳      | Remediation              |
 | v1.0.0  | 🎯     | First stable release     |
 

@@ -34,7 +34,7 @@ class RestClient:
         self,
         endpoint: str,
         headers: dict[str, str] | None = None,
-    ) -> dict:
+    ) -> Any:
 
         return self._request(
             "GET",
@@ -47,7 +47,7 @@ class RestClient:
         endpoint: str,
         json: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
-    ) -> dict:
+    ) -> Any:
 
         return self._request(
             "POST",
@@ -61,15 +61,22 @@ class RestClient:
         method: str,
         endpoint: str,
         **kwargs,
-    ) -> dict:
+    ) -> Any:
 
         try:
-
             response = self._client.request(
                 method,
                 endpoint,
                 **kwargs,
             )
+
+            if response.status_code in (401, 403):
+                raise AuthenticationError("Authentication failed.")
+
+            response.raise_for_status()
+
+        except AuthenticationError:
+            raise
 
         except httpx.ConnectError as exc:
             raise ConnectionError(str(exc)) from exc
@@ -77,23 +84,14 @@ class RestClient:
         except httpx.HTTPError as exc:
             raise ApiError(str(exc)) from exc
 
-        if response.status_code in (401, 403):
-            raise AuthenticationError("Authentication failed.")
-
-        response.raise_for_status()
-
         if not response.content:
             return {}
 
-        content_type = response.headers.get(
-            "Content-Type",
-            "",
-        )
-
-        if "application/json" in content_type:
+        try:
             return response.json()
+        except ValueError:
+            return response.text
 
-        return response.text
 
     def close(self) -> None:
         self._client.close()

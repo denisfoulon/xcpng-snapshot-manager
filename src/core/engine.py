@@ -5,6 +5,10 @@ Core execution engine.
 from core.discovery import CheckDiscovery
 from core.models import Inventory
 from providers.xo_provider import XOProvider
+from reports.console import ConsoleCheckReport, ConsoleInventoryReport
+from reports.html_report import HtmlReport
+from reports.json_report import JsonReport
+from reports.serialization import build_report
 
 class Engine:
     """Main execution engine."""
@@ -12,7 +16,7 @@ class Engine:
     def __init__(self, config) -> None:
         self.config = config
         self.inventory = Inventory()
-        self.discovery = CheckDiscovery()
+        self.discovery = CheckDiscovery(config.compliance)
         self.provider = None
 
     def run(self):
@@ -32,24 +36,32 @@ class Engine:
         self.verify()
 
     def observe(self):
-        print("No inventory provider configured.")
-
-    def observe(self):
         print("Loading provider.................... ", end="")
         self.provider = XOProvider(
             url=self.config.xo.url,
             username=self.config.xo.username,
             password=self.config.xo.password,
-            verify_ssl=False,
+            verify_ssl=self.config.xo.verify_ssl,
         )
 
         print("OK")
         print("Connecting.......................... ", end="")
         self.provider.connect()
         print("OK")
-        print("Disconnecting....................... ", end="")
-        self.provider.disconnect()
-        print("OK")
+
+        try:
+            print("Collecting inventory................ ", end="")
+            self.inventory = self.provider.collect()
+            print("OK")
+        finally:
+            print("Disconnecting....................... ", end="")
+            self.provider.disconnect()
+            print("OK")
+
+        if self.config.report.console:
+            inventory_report = ConsoleInventoryReport()
+            inventory_report.display(self.inventory)
+            inventory_report.display_snapshots(self.inventory)
 
     def evaluate(self):
         checks = self.discovery.discover()
@@ -62,12 +74,15 @@ class Engine:
         return results
 
     def report(self, results):
-        for result in results:
-            print(
-                f"[{result.status.value}]"
-                f"{result.name} - "
-                f"{result.message}"
-            )
+        payload = build_report(self.inventory, results)
+        if self.config.report.console:
+            ConsoleCheckReport().display(results)
+        if self.config.report.json:
+            path = JsonReport().write(payload, self.config.report.json_path)
+            print(f"JSON report written to {path}")
+        if self.config.report.html:
+            path = HtmlReport().write(payload, self.config.report.html_path)
+            print(f"HTML report written to {path}")
 
     def remediate(self):
         print("Nothing to do.")
