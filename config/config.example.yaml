@@ -12,7 +12,8 @@ provider:
 
 xo:
 
-  url: https://xoa.domain/
+  # The client accepts either the XO root URL or this REST API URL.
+  url: https://xoa.domain/rest/v0
 
   username: admin@xenorchestra.local
 
@@ -21,3 +22,21 @@ xo:
 report:
 
   console: true
+  json: false
+  json_path: reports/report.json
+  html: false
+  html_path: reports/report.html
+
+compliance:
+
+  snapshot_age:
+    warning_days: 7
+    critical_days: 30
+
+  snapshot_count:
+    warning: 3
+    critical: 5
+
+  storage_repository_usage:
+    warning_percent: 80
+    critical_percent: 90

@@ -34,7 +34,7 @@ class RestClient:
         self,
         endpoint: str,
         headers: dict[str, str] | None = None,
-    ) -> dict:
+    ) -> Any:
 
         return self._request(
             "GET",
@@ -47,7 +47,7 @@ class RestClient:
         endpoint: str,
         json: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
-    ) -> dict:
+    ) -> Any:
 
         return self._request(
             "POST",
@@ -61,7 +61,7 @@ class RestClient:
         method: str,
         endpoint: str,
         **kwargs,
-    ) -> dict:
+    ) -> Any:
 
         try:
 
@@ -85,15 +85,11 @@ class RestClient:
         if not response.content:
             return {}
 
-        content_type = response.headers.get(
-            "Content-Type",
-            "",
-        )
-
-        if "application/json" in content_type:
+        try:
             return response.json()
+        except ValueError:
+            return response.text
 
-        return response.text
 
     def close(self) -> None:
         self._client.close()
