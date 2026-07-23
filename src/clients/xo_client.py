@@ -19,8 +19,12 @@ class XOClient:
         self._username = username
         self._password = password
 
+        api_url = url.rstrip("/")
+        if not api_url.endswith("/rest/v0"):
+            api_url = f"{api_url}/rest/v0"
+
         self._client = RestClient(
-            base_url=url,
+            base_url=api_url,
             verify_ssl=verify_ssl,
         )
 
@@ -29,11 +33,11 @@ class XOClient:
         Authenticate against Xen Orchestra.
 
         The REST API supports HTTP Basic authentication.
-        Authentication is validated by calling the ping endpoint.
+        Authentication is validated by retrieving the current user's profile.
         """
 
         self._client.get(
-            "/ping",
+            "/users/me",
             headers=self._basic_auth_header(),
         )
 
@@ -41,6 +45,103 @@ class XOClient:
         """Close the HTTP session."""
 
         self._client.close()
+
+    def get_virtual_machines(self) -> list[dict]:
+        """Return virtual machines visible to the authenticated user."""
+
+        return self._get_collection(
+            "/vms",
+            "uuid,name_label,power_state,tags",
+        )
+
+    def get_pools(self) -> list[dict]:
+        """Return pools visible to the authenticated user."""
+
+        return self._get_collection("/pools", "uuid,name_label")
+
+    def get_hosts(self) -> list[dict]:
+        """Return hosts visible to the authenticated user."""
+
+        return self._get_collection(
+            "/hosts",
+            "uuid,name_label,address,enabled",
+        )
+
+    def get_snapshots(self) -> list[dict]:
+        """Return VM snapshots visible to the authenticated user."""
+
+        return self._get_collection(
+            "/vm-snapshots",
+            "uuid,name_label,name_description,$snapshot_of,snapshot_time",
+        )
+
+    def get_snapshot(self, snapshot_uuid: str) -> dict:
+        """Return the complete representation of one VM snapshot."""
+
+        response = self._client.get(
+            f"/vm-snapshots/{snapshot_uuid}",
+            headers=self._basic_auth_header(),
+        )
+        return response if isinstance(response, dict) else {}
+
+    def delete_snapshot(self, snapshot_uuid: str) -> dict:
+        """Delete one VM snapshot through the XO REST API."""
+
+        response = self._client.delete(
+            f"/vm-snapshots/{snapshot_uuid}",
+            headers=self._basic_auth_header(),
+        )
+        return response if isinstance(response, dict) else {}
+
+    def get_resource(self, reference) -> dict:
+        """Fetch a REST resource referenced by an XO href or URL."""
+
+        if isinstance(reference, dict):
+            reference = reference.get(
+                "href",
+                reference.get("url", reference.get("id", "")),
+            )
+        if not isinstance(reference, str) or not reference:
+            return {}
+        if "/" not in reference and not reference.startswith("http"):
+            return {}
+        endpoint = reference
+        if "/rest/v0" in endpoint:
+            endpoint = endpoint.split("/rest/v0", 1)[1] or "/"
+        if not endpoint.startswith("/"):
+            endpoint = f"/{endpoint}"
+        response = self._client.get(
+            endpoint,
+            headers=self._basic_auth_header(),
+        )
+        return response if isinstance(response, dict) else {}
+
+    def get_storage_repositories(self) -> list[dict]:
+        """Return storage repositories visible to the authenticated user."""
+
+        return self._get_collection(
+            "/srs",
+            "name_label,physical_size,physical_utilisation",
+        )
+
+    def _get_collection(
+        self,
+        endpoint: str,
+        fields: str,
+    ) -> list[dict]:
+        """Retrieve a REST collection with the requested object fields."""
+
+        response = self._client.get(
+            f"{endpoint}?fields={fields}",
+            headers=self._basic_auth_header(),
+        )
+
+        if not isinstance(response, list):
+            raise TypeError(
+                f"Expected a list from {endpoint}, got {type(response).__name__}."
+            )
+
+        return response
 
     def _basic_auth_header(self) -> dict[str, str]:
 

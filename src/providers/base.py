@@ -41,3 +41,7 @@ class InventoryProvider(ABC):
     @abstractmethod
     def collect(self) -> Inventory:
         """Collect the infrastructure inventory."""
+
+    @abstractmethod
+    def delete_snapshot(self, snapshot_uuid: str) -> None:
+        """Delete one VM snapshot."""

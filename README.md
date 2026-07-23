@@ -45,7 +45,7 @@ Verify
 
 Current release:
 
-**v0.0.3**
+**v0.0.7**
 
 Implemented:
 
@@ -55,6 +55,9 @@ Implemented:
 * Execution engine
 * Modular architecture
 * Check discovery engine
+* Pool, host, VM, snapshot and Storage Repository inventory
+* Configurable snapshot age, snapshot count and Storage Repository usage checks
+* Safe snapshot remediation modes: audit, dry-run and explicit execution
 
 ---
 
@@ -65,10 +68,11 @@ Implemented:
 | v0.0.1  | ✅      | Bootstrap                |
 | v0.0.2  | ✅      | Configuration            |
 | v0.0.3  | ✅      | Provider connection      |
-| v0.0.4  | 🚧     | Infrastructure inventory |
-| v0.0.5  | ⏳      | Compliance checks        |
-| v0.0.6  | ⏳      | Reporting                |
-| v0.0.7  | ⏳      | Remediation              |
+| v0.0.4  | ✅      | Infrastructure inventory |
+| v0.0.5  | ✅      | Compliance checks        |
+| v0.0.6  | ✅      | Reporting                |
+| v0.0.7  | ✅      | Remediation              |
+| v0.0.8  | ⏳      | Advanced SR vacuum      |
 | v1.0.0  | 🎯     | First stable release     |
 
 ---
@@ -102,11 +106,32 @@ Implemented:
 * Blacklist support
 * Dry-run mode
 * Storage reclaim
+* Scheduled SR vacuum with Storage Repository blacklist
 
 ### Verify
 
 * Post-remediation validation
 * Compliance confirmation
+
+### Planned v0.0.8 vacuum
+
+The upcoming SR vacuum will discover all Storage Repositories automatically. No
+manual SR inventory will be required; exceptional SRs will be excluded through
+`blacklist_sr_uuids`. The application will remain a one-shot command, scheduled
+by cron or a systemd timer, with an interval and a minimum cooldown to prevent
+duplicate scans.
+
+Target configuration:
+
+```yaml
+maintenance:
+  vacuum:
+    enabled: false
+    mode: audit
+    interval_hours: 24
+    min_interval_hours: 20
+    blacklist_sr_uuids: []
+```
 
 ---
 

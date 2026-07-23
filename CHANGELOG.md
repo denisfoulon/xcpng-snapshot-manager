@@ -1,5 +1,63 @@
 # Changelog
 
+## v0.0.7
+
+### Added
+
+- Audit, dry-run and explicit execution modes for snapshot remediation.
+- Snapshot blacklist tags and orphan protection.
+- Blacklisted snapshots now expire after a configurable maximum age.
+- Post-remediation verification.
+
+### Safety
+
+- Remediation defaults to audit mode.
+- Deletion requires both `mode: execute` and `confirm: true`.
+
+## Upcoming v0.0.8
+
+### Planned
+
+- Advanced, scheduled Storage Repository vacuum.
+- Automatic SR discovery with blacklist exclusions.
+- Coalesce-aware scan execution and free-space verification.
+
+## v0.0.6
+
+### Added
+
+- Configurable JSON and standalone HTML reports.
+- Structured console output for compliance results.
+- Report serialization tests.
+- Detailed snapshot reporting with VM, age, Storage Repository and size fields when available.
+
+### Changed
+
+- Reporting now uses one shared payload for console, JSON and HTML outputs.
+
+## v0.0.5
+
+### Added
+
+- Configurable snapshot age, snapshot count and Storage Repository usage checks.
+- Compliance thresholds in the YAML configuration.
+- Unit tests covering warning and critical outcomes.
+
+### Changed
+
+- Compliance checks now receive their typed policy configuration during discovery.
+
+## v0.0.4
+
+### Added
+
+- Xen Orchestra inventory collection for pools, hosts, virtual machines, snapshots and Storage Repositories.
+- Console inventory summary.
+
+### Changed
+
+- The engine now collects inventory between provider connection and disconnection.
+
 ## v0.0.3
 
 ### Added
