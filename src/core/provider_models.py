@@ -12,11 +12,14 @@ from dataclasses import dataclass
 class ProviderCapabilities:
     """Capabilities supported by an inventory provider."""
 
+    pools: bool = False
+    hosts: bool = False
     virtual_machines: bool = False
     snapshots: bool = False
     storage_repositories: bool = False
     cleanup: bool = False
     estimated_reclaim: bool = False
+    storage_scan: bool = False
 
 
 @dataclass(frozen=True)

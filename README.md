@@ -45,7 +45,7 @@ Verify
 
 Current release:
 
-**v0.0.3**
+**v0.0.8**
 
 Implemented:
 
@@ -55,6 +55,39 @@ Implemented:
 * Execution engine
 * Modular architecture
 * Check discovery engine
+* Pool, host, VM, snapshot and Storage Repository inventory
+* Configurable snapshot age, snapshot count and Storage Repository usage checks
+* Safe snapshot remediation modes: audit, dry-run and explicit execution
+* Disabled-by-default SR maintenance with automatic discovery, blacklist, cooldown,
+  task polling and before/after free-space state
+
+Configuration starts with the Xen Orchestra REST endpoint:
+
+```yaml
+provider:
+  type: xo
+
+xo:
+  url: https://xoa.example.com/rest/v0
+  username: admin@example.com
+  password: your_password
+  verify_ssl: false
+```
+
+SR maintenance is opt-in. It discovers every SR automatically; only exceptional
+SR UUIDs need to be listed in the blacklist:
+
+```yaml
+maintenance:
+  vacuum:
+    enabled: false
+    mode: audit
+    interval_hours: 24
+    min_interval_hours: 20
+    blacklist_sr_uuids: []
+    state_file: state/sr_maintenance.json
+    task_timeout_minutes: 30
+```
 
 ---
 
@@ -65,10 +98,11 @@ Implemented:
 | v0.0.1  | ✅      | Bootstrap                |
 | v0.0.2  | ✅      | Configuration            |
 | v0.0.3  | ✅      | Provider connection      |
-| v0.0.4  | 🚧     | Infrastructure inventory |
-| v0.0.5  | ⏳      | Compliance checks        |
-| v0.0.6  | ⏳      | Reporting                |
-| v0.0.7  | ⏳      | Remediation              |
+| v0.0.4  | ✅      | Infrastructure inventory |
+| v0.0.5  | ✅      | Compliance checks        |
+| v0.0.6  | ✅      | Reporting                |
+| v0.0.7  | ✅      | Remediation              |
+| v0.0.8  | ✅      | Advanced SR vacuum      |
 | v1.0.0  | 🎯     | First stable release     |
 
 ---
@@ -102,11 +136,34 @@ Implemented:
 * Blacklist support
 * Dry-run mode
 * Storage reclaim
+* Scheduled SR vacuum with Storage Repository blacklist
 
 ### Verify
 
 * Post-remediation validation
 * Compliance confirmation
+
+### SR maintenance (v0.0.8)
+
+The upcoming SR vacuum will discover all Storage Repositories automatically. No
+manual SR inventory will be required; exceptional SRs will be excluded through
+`blacklist_sr_uuids`. The application will remain a one-shot command, scheduled
+by cron or a systemd timer, with an interval and a minimum cooldown to prevent
+duplicate scans.
+
+Target configuration:
+
+```yaml
+maintenance:
+  vacuum:
+    enabled: false
+    mode: audit
+    interval_hours: 24
+    min_interval_hours: 20
+    blacklist_sr_uuids: []
+    state_file: state/sr_maintenance.json
+    task_timeout_minutes: 30
+```
 
 ---
 

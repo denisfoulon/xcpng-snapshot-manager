@@ -41,3 +41,11 @@ class InventoryProvider(ABC):
     @abstractmethod
     def collect(self) -> Inventory:
         """Collect the infrastructure inventory."""
+
+    @abstractmethod
+    def delete_snapshot(self, snapshot_uuid: str) -> None:
+        """Delete one VM snapshot."""
+
+    @abstractmethod
+    def scan_storage_repository(self, sr_uuid: str, timeout_seconds: int = 1800) -> None:
+        """Start and wait for an SR scan."""

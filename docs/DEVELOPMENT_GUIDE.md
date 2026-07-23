@@ -166,6 +166,13 @@ The rest of the application works with configuration objects.
 
 Avoid nested dictionary access.
 
+The v0.0.8 SR maintenance policy is exposed as `config.maintenance` and is
+disabled by default. The one-shot command discovers all SRs, skips UUIDs in
+`blacklist_sr_uuids`, enforces `min_interval_hours`, and persists run state in
+`state_file`. `interval_hours` documents the intended scheduler cadence; cron
+or a systemd timer invokes the command. Only `mode: execute` starts XO scan
+tasks; `audit` and `dry_run` are non-mutating.
+
 ---
 
 ## Checks

@@ -11,13 +11,55 @@ provider:
   type: xo
 
 xo:
-
-  url: https://xoa.domain/
-
-  username: admin@xenorchestra.local
-
-  password: yourpassword
+  url: https://xoa.example.com/rest/v0
+  username: admin@example.com
+  password: your_password
+  verify_ssl: false
 
 report:
 
   console: true
+  json: false
+  json_path: reports/report.json
+  html: false
+  html_path: reports/report.html
+
+compliance:
+
+  snapshot_age:
+    warning_days: 7
+    critical_days: 30
+
+  snapshot_count:
+    warning: 3
+    critical: 5
+
+  storage_repository_usage:
+    warning_percent: 80
+    critical_percent: 90
+
+remediation:
+
+  # audit, dry_run or execute
+  mode: audit
+  min_age_days: 30
+  blacklist_max_age_days: 90
+  blacklist_tags: []
+  include_orphans: false
+  # Required together with mode: execute.
+  confirm: false
+
+maintenance:
+
+  vacuum:
+    # Disabled by default: no SR scan is performed unless explicitly enabled.
+    enabled: false
+    # audit, dry_run or execute
+    mode: audit
+    # Nominal scheduler cadence and hard anti-duplicate cooldown.
+    interval_hours: 24
+    min_interval_hours: 20
+    # SRs are discovered automatically; list only exceptional exclusions.
+    blacklist_sr_uuids: []
+    state_file: state/sr_maintenance.json
+    task_timeout_minutes: 30
