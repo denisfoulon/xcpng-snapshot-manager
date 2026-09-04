@@ -173,6 +173,12 @@ disabled by default. The one-shot command discovers all SRs, skips UUIDs in
 or a systemd timer invokes the command. Only `mode: execute` starts XO scan
 tasks; `audit` and `dry_run` are non-mutating.
 
+Scheduled VM snapshots use `config.snapshot_scheduling`. Each input `.txt`
+file is one request. A completely successful request is moved to the archive
+with `.done.txt`; a partial or complete failure is renamed `.failed.txt` with
+per-VM results appended. Failed files are deliberately excluded from future
+cron runs so a successful VM is never snapshotted twice by an automatic retry.
+
 ---
 
 ## Checks

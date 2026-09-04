@@ -47,5 +47,9 @@ class InventoryProvider(ABC):
         """Delete one VM snapshot."""
 
     @abstractmethod
+    def create_snapshot(self, vm_uuid: str, name_label: str, timeout_seconds: int = 1800) -> None:
+        """Create one VM snapshot and wait for completion."""
+
+    @abstractmethod
     def scan_storage_repository(self, sr_uuid: str, timeout_seconds: int = 1800) -> None:
         """Start and wait for an SR scan."""

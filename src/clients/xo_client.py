@@ -93,6 +93,16 @@ class XOClient:
         )
         return response if isinstance(response, dict) else {}
 
+    def create_snapshot(self, vm_uuid: str, name_label: str) -> dict:
+        """Create a VM snapshot and return the asynchronous task reference."""
+
+        response = self._client.post(
+            f"/vms/{vm_uuid}/actions/snapshot",
+            json={"name_label": name_label},
+            headers=self._basic_auth_header(),
+        )
+        return response if isinstance(response, dict) else response
+
     def get_resource(self, reference) -> dict:
         """Fetch a REST resource referenced by an XO href or URL."""
 

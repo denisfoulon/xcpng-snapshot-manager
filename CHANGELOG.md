@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.0.9
+
+### Added
+
+- File-based scheduled VM snapshot requests.
+- `--run-scheduled-snapshots` mode for cron/systemd execution.
+- Exact VM UUID/name resolution and controlled wildcard matching.
+- Success archives (`.done.txt`) and non-retried failure files (`.failed.txt`) with per-VM results.
+- Snapshot scheduling configuration with timezone and lateness control.
+
 ## v0.0.7
 
 ### Added

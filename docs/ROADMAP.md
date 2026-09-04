@@ -72,6 +72,18 @@ maintenance:
     blacklist_sr_uuids: []
 ```
 
+## v0.0.9 - Scheduled VM Snapshots
+- [x] File-based snapshot requests
+- [x] Cron-compatible execution mode
+- [x] Name, UUID and wildcard VM resolution
+- [x] Success archive and failed-request marking
+- [x] Per-VM result history without automatic retries
+
 ## v0.1.0 - Advanced Compliance
 - [ ] Policies
 - [ ] Risk score
+
+## v1.0.0 - Stable Release
+- [ ] Rework console presentation with clearly separated visual sections
+- [ ] Consistent section banners/dividers for Observe, Evaluate, Report, Remediation, Verify and Storage Maintenance
+- [ ] Improve readability of long reports and remediation listings

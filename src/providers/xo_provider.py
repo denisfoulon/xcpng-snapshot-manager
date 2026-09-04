@@ -85,6 +85,12 @@ class XOProvider(InventoryProvider):
 
         self._client.delete_snapshot(snapshot_uuid)
 
+    def create_snapshot(self, vm_uuid: str, name_label: str, timeout_seconds: int = 1800) -> None:
+        """Create one VM snapshot and wait for its XO task."""
+
+        response = self._client.create_snapshot(vm_uuid, name_label)
+        self._client.wait_for_task(response, timeout_seconds)
+
     def scan_storage_repository(self, sr_uuid: str, timeout_seconds: int = 1800) -> None:
         """Start and wait for an SR scan."""
 

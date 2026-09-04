@@ -12,6 +12,7 @@ from reports.json_report import JsonReport
 from reports.serialization import build_report
 from reports.serialization import snapshot_age_days
 from core.storage_maintenance import acquire_lock, in_cooldown, load_state, now_utc, save_state
+from core.snapshot_scheduler import SnapshotScheduler
 
 class Engine:
     """Main execution engine."""
@@ -42,6 +43,32 @@ class Engine:
 
         print("\nStorage Maintenance\n")
         self.maintain_storage()
+
+    def run_scheduled_snapshots(self):
+        """Process pending snapshot request files without compliance checks."""
+        provider = self._create_provider()
+        print("Loading provider.................... ", end="")
+        print("OK")
+        print("Connecting.......................... ", end="")
+        provider.connect()
+        print("OK")
+        try:
+            print("Collecting inventory................ ", end="")
+            self.inventory = provider.collect()
+            print("OK")
+            print("\nSnapshot Scheduling\n")
+            summary = SnapshotScheduler(self.config.snapshot_scheduling).process(
+                self.inventory, provider
+            )
+            print(
+                "Scheduled requests.................. "
+                f"{summary['processed']} processed, {summary['success']} archived, "
+                f"{summary['failed']} failed, {summary['skipped']} skipped"
+            )
+        finally:
+            print("Disconnecting....................... ", end="")
+            provider.disconnect()
+            print("OK")
 
     def observe(self):
         print("Loading provider.................... ", end="")

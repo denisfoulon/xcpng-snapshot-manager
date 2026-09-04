@@ -63,3 +63,16 @@ maintenance:
     blacklist_sr_uuids: []
     state_file: state/sr_maintenance.json
     task_timeout_minutes: 30
+
+snapshot_scheduling:
+
+  # Disabled by default. Cron can call --run-scheduled-snapshots.
+  enabled: false
+  # audit, dry_run or execute
+  mode: audit
+  input_directory: config/snapshot_requests
+  archive_directory: config/snapshot_archives
+  timezone: Europe/Paris
+  max_snapshot_lateness_minutes: 60
+  snapshot_name_prefix: scheduled
+  task_timeout_minutes: 30

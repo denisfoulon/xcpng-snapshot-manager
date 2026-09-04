@@ -94,6 +94,20 @@ class StorageMaintenanceConfig:
 
 
 @dataclass
+class SnapshotSchedulingConfig:
+    """Configuration for file-based scheduled VM snapshots."""
+
+    enabled: bool = False
+    mode: str = "audit"
+    input_directory: str = "config/snapshot_requests"
+    archive_directory: str = "config/snapshot_archives"
+    timezone: str = "Europe/Paris"
+    max_snapshot_lateness_minutes: int = 60
+    snapshot_name_prefix: str = "scheduled"
+    task_timeout_minutes: int = 30
+
+
+@dataclass
 class Config:
     application: ApplicationConfig
     logging: LoggingConfig
@@ -104,4 +118,7 @@ class Config:
     remediation: RemediationConfig = field(default_factory=RemediationConfig)
     maintenance: StorageMaintenanceConfig = field(
         default_factory=StorageMaintenanceConfig
+    )
+    snapshot_scheduling: SnapshotSchedulingConfig = field(
+        default_factory=SnapshotSchedulingConfig
     )

@@ -45,7 +45,7 @@ Verify
 
 Current release:
 
-**v0.0.8**
+**v0.0.9**
 
 Implemented:
 
@@ -60,6 +60,7 @@ Implemented:
 * Safe snapshot remediation modes: audit, dry-run and explicit execution
 * Disabled-by-default SR maintenance with automatic discovery, blacklist, cooldown,
   task polling and before/after free-space state
+* File-based scheduled VM snapshots with success archives and failed-request marking
 
 Configuration starts with the Xen Orchestra REST endpoint:
 
@@ -103,6 +104,7 @@ maintenance:
 | v0.0.6  | ✅      | Reporting                |
 | v0.0.7  | ✅      | Remediation              |
 | v0.0.8  | ✅      | Advanced SR vacuum      |
+| v0.0.9  | ✅      | Scheduled VM snapshots  |
 | v1.0.0  | 🎯     | First stable release     |
 
 ---
@@ -145,11 +147,12 @@ maintenance:
 
 ### SR maintenance (v0.0.8)
 
-The upcoming SR vacuum will discover all Storage Repositories automatically. No
-manual SR inventory will be required; exceptional SRs will be excluded through
-`blacklist_sr_uuids`. The application will remain a one-shot command, scheduled
-by cron or a systemd timer, with an interval and a minimum cooldown to prevent
-duplicate scans.
+R maintenance discovers all Storage Repositories automatically. No manual SR
+inventory is required; exceptional SRs can be excluded through
+`blacklist_sr_uuids`.
+
+The application remains a one-shot command, suitable for execution through
+cron or a systemd timer. Interval and cooldown settings prevent duplicate scans.
 
 Target configuration:
 
@@ -163,6 +166,41 @@ maintenance:
     blacklist_sr_uuids: []
     state_file: state/sr_maintenance.json
     task_timeout_minutes: 30
+```
+
+### Scheduled snapshots (v0.0.9)
+
+Scheduled snapshot requests are individual text files. The command processes
+only `.txt` files and can be launched by cron:
+
+```bash
+python3 src/snapshot_manager.py --run-scheduled-snapshots
+```
+
+Example request file:
+
+```text
+2026-08-05 14:40
+vm1
+vm2
+vm*
+```
+
+After a complete success, the request is moved to the archive directory as
+`.done.txt`. A partial or complete failure is renamed `.failed.txt` and the
+result of every VM is appended to the file. Failed files are never retried
+automatically by cron.
+
+```yaml
+snapshot_scheduling:
+  enabled: false
+  mode: audit
+  input_directory: config/snapshot_requests
+  archive_directory: config/snapshot_archives
+  timezone: Europe/Paris
+  max_snapshot_lateness_minutes: 60
+  snapshot_name_prefix: scheduled
+  task_timeout_minutes: 30
 ```
 
 ---
