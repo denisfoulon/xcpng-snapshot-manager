@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.0.0 - 2026-09-04
+
+### Stable release
+
+- First stable release for production use.
+- Unified console workflow with clear phase separation.
+- Snapshot inventory, compliance checks, reports and safe remediation.
+- Optional SR maintenance with persistent state and cooldown protection.
+- File-based scheduled VM snapshots with archive and failure history.
+- CLI support for custom configuration files, version reporting and scheduled workers.
 ## v0.0.9
 
 ### Added

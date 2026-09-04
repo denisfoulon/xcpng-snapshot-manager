@@ -14,6 +14,16 @@ from reports.serialization import snapshot_age_days
 from core.storage_maintenance import acquire_lock, in_cooldown, load_state, now_utc, save_state
 from core.snapshot_scheduler import SnapshotScheduler
 
+
+def _section(title: str) -> None:
+    """Print a consistent visual divider between execution phases."""
+    line = "=" * 70
+    print()
+    print(line)
+    print(f" {title}")
+    print(line)
+    print()
+
 class Engine:
     """Main execution engine."""
 
@@ -26,26 +36,30 @@ class Engine:
         self._remediation_errors: list[str] = []
 
     def run(self):
-        print("\nObserve\n")
+        _section("Observe")
         self.observe()
 
-        print("\nEvaluate\n")
+        _section("Evaluate")
         results = self.evaluate()
 
-        print("\nReport\n")
+        _section("Report")
         self.report(results)
 
-        print("\nRemediation\n")
+        _section("Remediation")
         self.remediate()
 
-        print("\nVerify\n")
+        _section("Verify")
         self.verify()
 
-        print("\nStorage Maintenance\n")
+        _section("Storage Maintenance")
         self.maintain_storage()
 
     def run_scheduled_snapshots(self):
         """Process pending snapshot request files without compliance checks."""
+        _section("Snapshot Scheduling")
+        if not self.config.snapshot_scheduling.enabled:
+            print("Disabled by configuration.")
+            return
         provider = self._create_provider()
         print("Loading provider.................... ", end="")
         print("OK")
@@ -56,7 +70,6 @@ class Engine:
             print("Collecting inventory................ ", end="")
             self.inventory = provider.collect()
             print("OK")
-            print("\nSnapshot Scheduling\n")
             summary = SnapshotScheduler(self.config.snapshot_scheduling).process(
                 self.inventory, provider
             )

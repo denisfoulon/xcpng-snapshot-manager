@@ -2,16 +2,26 @@
 """XCP-ng Snapshot Manager main application entry point."""
 
 import argparse
+import sys
 
 from core.banner import display_banner
-from core.config import ConfigLoader
-from core.engine import Engine
+from core.version import VERSION
 
 
-def main() -> None:
+def main() -> int:
     """Application entry point."""
 
     parser = argparse.ArgumentParser(description="XCP-ng Snapshot Manager")
+    parser.add_argument(
+        "--config",
+        default="config/config.yaml",
+        help="path to the YAML configuration file (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {VERSION}",
+    )
     parser.add_argument(
         "--run-scheduled-snapshots",
         action="store_true",
@@ -19,11 +29,19 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    # Delay optional runtime dependencies so --help/--version remain available.
+    from core.config import ConfigLoader
+    from core.engine import Engine
+
     display_banner()
 
     print("Loading configuration............... ", end="")
 
-    config = ConfigLoader().load()
+    try:
+        config = ConfigLoader(args.config).load()
+    except (FileNotFoundError, ValueError, TypeError, KeyError) as exc:
+        print(f"Configuration error: {exc}", file=sys.stderr)
+        return 2
 
     print("OK")
 
@@ -32,7 +50,8 @@ def main() -> None:
         engine.run_scheduled_snapshots()
     else:
         engine.run()
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

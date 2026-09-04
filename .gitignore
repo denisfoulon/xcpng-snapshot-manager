@@ -28,3 +28,13 @@ config/config.yaml
 # OS
 .DS_Store
 Thumbs.db
+
+# Generated reports
+reports/report.html
+
+# Runtime data
+config/snapshot_archives/*
+!config/snapshot_archives/.gitkeep
+
+config/snapshot_requests/*
+!config/snapshot_requests/.gitkeep

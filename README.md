@@ -13,7 +13,7 @@ The open-source compliance engine for XCP-ng snapshots.
 ![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=flat-square\&logo=python\&logoColor=white)
 ![XCP-ng](https://img.shields.io/badge/XCP--ng-Compatible-2E8B57?style=flat-square)
 ![License](https://img.shields.io/github/license/DenisFoulon/xcpng-snapshot-manager?style=flat-square)
-![Status](https://img.shields.io/badge/status-Under%20Development-orange?style=flat-square)
+![Status](https://img.shields.io/badge/status-Stable-brightgreen?style=flat-square)
 
 </p>
 
@@ -45,7 +45,7 @@ Verify
 
 Current release:
 
-**v0.0.9**
+**v1.0.0**
 
 Implemented:
 
@@ -105,11 +105,11 @@ maintenance:
 | v0.0.7  | ✅      | Remediation              |
 | v0.0.8  | ✅      | Advanced SR vacuum      |
 | v0.0.9  | ✅      | Scheduled VM snapshots  |
-| v1.0.0  | 🎯     | First stable release     |
+| v1.0.0  | ✅      | First stable release     |
 
 ---
 
-## Planned Features
+## Capabilities and future directions
 
 ### Observe
 
@@ -147,7 +147,7 @@ maintenance:
 
 ### SR maintenance (v0.0.8)
 
-R maintenance discovers all Storage Repositories automatically. No manual SR
+SR maintenance discovers all Storage Repositories automatically. No manual SR
 inventory is required; exceptional SRs can be excluded through
 `blacklist_sr_uuids`.
 
@@ -247,6 +247,14 @@ pip install -r requirements.txt
 
 ## Configuration
 
+Create a local configuration from the supplied example, then edit the Xen Orchestra credentials:
+
+```bash
+cp config/config.example.yaml config/config.yaml
+```
+
+The local `config/config.yaml` is ignored by Git, so credentials are not committed.
+
 ```yaml
 provider:
   type: xo
@@ -262,8 +270,24 @@ xo:
 
 ## Run
 
+Standard compliance, reporting and remediation run:
+
 ```bash
 python3 src/snapshot_manager.py
+```
+
+For the file-based scheduled snapshot worker (typically called by cron):
+
+```bash
+python3 src/snapshot_manager.py --run-scheduled-snapshots
+```
+
+Useful CLI options:
+
+```text
+--config PATH       use a non-default YAML file
+--version           print the installed version
+--help              show all options
 ```
 
 ---

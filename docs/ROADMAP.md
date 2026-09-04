@@ -84,6 +84,6 @@ maintenance:
 - [ ] Risk score
 
 ## v1.0.0 - Stable Release
-- [ ] Rework console presentation with clearly separated visual sections
-- [ ] Consistent section banners/dividers for Observe, Evaluate, Report, Remediation, Verify and Storage Maintenance
-- [ ] Improve readability of long reports and remediation listings
+- [x] Rework console presentation with clearly separated visual sections
+- [x] Consistent section banners/dividers for Observe, Evaluate, Report, Remediation, Verify and Storage Maintenance
+- [x] Improve readability of long reports and remediation listings
