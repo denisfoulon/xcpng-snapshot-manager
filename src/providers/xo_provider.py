@@ -2,6 +2,8 @@
 Xen Orchestra inventory provider.
 """
 
+import logging
+
 from clients.xo_client import XOClient
 from core.models import (
     Host,
@@ -20,6 +22,8 @@ from core.provider_models import (
 from providers.base import InventoryProvider
 
 
+logger = logging.getLogger(__name__)
+
 class XOProvider(InventoryProvider):
     """Xen Orchestra provider."""
 
@@ -29,6 +33,7 @@ class XOProvider(InventoryProvider):
         username: str,
         password: str,
         verify_ssl: bool = True,
+        include_templates: bool = False,
     ) -> None:
 
         self._client = XOClient(
@@ -38,6 +43,7 @@ class XOProvider(InventoryProvider):
             verify_ssl=verify_ssl,
         )
 
+        self._include_templates = include_templates
         self._info = ProviderInfo(
             name="Xen Orchestra",
             platform="XCP-ng",
@@ -108,9 +114,16 @@ class XOProvider(InventoryProvider):
             self._to_host(item)
             for item in self._client.get_hosts()
         ]
+        virtual_machine_items = self._client.get_virtual_machines()
+        template_vm_uuids = {
+            self._object_uuid(item)
+            for item in virtual_machine_items
+            if self._is_template(item)
+        }
         virtual_machines = [
             self._to_virtual_machine(item)
-            for item in self._client.get_virtual_machines()
+            for item in virtual_machine_items
+            if self._include_templates or self._object_uuid(item) not in template_vm_uuids
         ]
         virtual_machines_by_uuid = {
             virtual_machine.uuid: virtual_machine
@@ -133,9 +146,19 @@ class XOProvider(InventoryProvider):
                 details = self._enrich_snapshot_storage(details)
             except ApiError:
                 details = {}
+            snapshot_data = {**item, **details}
+            if not self._include_templates:
+                parent_uuid, parent_vm = self._resolve_snapshot_parent(snapshot_data)
+                if self._is_template(parent_vm):
+                    logger.debug(
+                        "Excluded template snapshot: %s / parent: %s",
+                        snapshot_data.get("name_label", snapshot_uuid),
+                        parent_vm.get("name_label", parent_uuid),
+                    )
+                    continue
             snapshots.append(
                 self._to_snapshot(
-                    {**item, **details},
+                    snapshot_data,
                     virtual_machines_by_uuid,
                     storage_repositories_by_uuid,
                 )
@@ -148,6 +171,35 @@ class XOProvider(InventoryProvider):
             snapshots=snapshots,
             storage_repositories=storage_repositories,
         )
+
+    @staticmethod
+    def _is_template(item: dict) -> bool:
+        """Return whether an XO VM collection entry represents a template."""
+
+        value = item.get("is_a_template", False)
+        return value is True or str(value).lower() == "true"
+
+    def _resolve_snapshot_parent(self, snapshot: dict) -> tuple[str, dict]:
+        """Resolve a snapshot parent VM by its actual ``snapshot_of`` reference."""
+
+        parent_uuid = self._reference_uuid(
+            snapshot.get("snapshot_of", snapshot.get("$snapshot_of", ""))
+        )
+        if not parent_uuid:
+            return "", {}
+        try:
+            parent = self._client.get_virtual_machine(parent_uuid)
+        except ApiError:
+            parent = {}
+        if "is_a_template" in parent:
+            return parent_uuid, parent
+        try:
+            template = self._client.get_virtual_machine_template(parent_uuid)
+        except ApiError:
+            return parent_uuid, parent
+        if template:
+            return parent_uuid, template
+        return parent_uuid, parent
 
     def _enrich_snapshot_storage(self, details: dict) -> dict:
         """Resolve VBD/VDI references to expose the snapshot's SR and size."""

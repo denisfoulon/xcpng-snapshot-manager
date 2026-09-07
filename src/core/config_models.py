@@ -108,6 +108,13 @@ class SnapshotSchedulingConfig:
 
 
 @dataclass
+class SnapshotManagementConfig:
+    """Define which VM types are included in snapshot management."""
+
+    include_templates: bool = False
+
+
+@dataclass
 class Config:
     application: ApplicationConfig
     logging: LoggingConfig
@@ -121,4 +128,7 @@ class Config:
     )
     snapshot_scheduling: SnapshotSchedulingConfig = field(
         default_factory=SnapshotSchedulingConfig
+    )
+    snapshot_management: SnapshotManagementConfig = field(
+        default_factory=SnapshotManagementConfig
     )

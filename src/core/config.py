@@ -17,6 +17,7 @@ from core.config_models import (
     SnapshotAgePolicy,
     SnapshotCountPolicy,
     StorageRepositoryUsagePolicy,
+    SnapshotManagementConfig,
     StorageMaintenanceConfig,
     SnapshotSchedulingConfig,
     XOConfig,
@@ -77,5 +78,8 @@ class ConfigLoader:
             ),
             snapshot_scheduling=SnapshotSchedulingConfig(
                 **data.get("snapshot_scheduling", {})
+            ),
+            snapshot_management=SnapshotManagementConfig(
+                **data.get("snapshot_management", {})
             ),
         )

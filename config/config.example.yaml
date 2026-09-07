@@ -38,6 +38,10 @@ compliance:
     warning_percent: 80
     critical_percent: 90
 
+snapshot_management:
+  # Templates and their snapshots are excluded unless explicitly enabled.
+  include_templates: false
+
 remediation:
 
   # audit, dry_run or execute

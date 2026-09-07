@@ -51,8 +51,26 @@ class XOClient:
 
         return self._get_collection(
             "/vms",
-            "uuid,name_label,power_state,tags",
+            "uuid,name_label,power_state,tags,is_a_template",
         )
+
+    def get_virtual_machine(self, vm_uuid: str) -> dict:
+        """Return the VM object identified by its UUID."""
+
+        response = self._client.get(
+            f"/vms/{vm_uuid}",
+            headers=self._basic_auth_header(),
+        )
+        return response if isinstance(response, dict) else {}
+
+    def get_virtual_machine_template(self, vm_uuid: str) -> dict:
+        """Return the template object identified by its UUID."""
+
+        response = self._client.get(
+            f"/vm-templates/{vm_uuid}",
+            headers=self._basic_auth_header(),
+        )
+        return response if isinstance(response, dict) else {}
 
     def get_pools(self) -> list[dict]:
         """Return pools visible to the authenticated user."""

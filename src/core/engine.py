@@ -113,6 +113,7 @@ class Engine:
             username=self.config.xo.username,
             password=self.config.xo.password,
             verify_ssl=self.config.xo.verify_ssl,
+            include_templates=self.config.snapshot_management.include_templates,
         )
 
     def evaluate(self):
