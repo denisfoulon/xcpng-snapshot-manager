@@ -130,6 +130,17 @@ class XOProvider(InventoryProvider):
             for virtual_machine in virtual_machines
         }
 
+        virtual_machines_details_by_uuid = {}
+
+        for vm_uuid in virtual_machines_by_uuid:
+            try:
+                virtual_machines_details_by_uuid[vm_uuid] = (
+                    self._client.get_virtual_machine(vm_uuid)
+                )
+            except ApiError:
+                continue
+
+
         storage_repositories = [
             self._to_storage_repository(item)
             for item in self._client.get_storage_repositories()
@@ -143,9 +154,19 @@ class XOProvider(InventoryProvider):
             snapshot_uuid = self._object_uuid(item)
             try:
                 details = self._client.get_snapshot(snapshot_uuid)
-                details = self._enrich_snapshot_storage(details)
+
+                vm_uuid = self._reference_uuid(
+                    details.get("$snapshot_of", "")
+                )
+                vm_details = virtual_machines_details_by_uuid.get(vm_uuid)
+
+                details = self._enrich_snapshot_storage(
+                    details,
+                    vm_details,
+                )
             except ApiError:
                 details = {}
+
             snapshot_data = {**item, **details}
             if not self._include_templates:
                 parent_uuid, parent_vm = self._resolve_snapshot_parent(snapshot_data)
@@ -201,47 +222,65 @@ class XOProvider(InventoryProvider):
             return parent_uuid, template
         return parent_uuid, parent
 
-    def _enrich_snapshot_storage(self, details: dict) -> dict:
-        """Resolve VBD/VDI references to expose the snapshot's SR and size."""
+    def _enrich_snapshot_storage(
+        self,
+        details: dict,
+        virtual_machine: dict | None = None,
+    ) -> dict:
+        """Resolve a snapshot's storage repository from its parent VM."""
 
-        references = details.get(
-            "VBDs",
-            details.get("$VBDs", details.get("vbds", details.get("$vbds", []))),
+        if not virtual_machine:
+            return details
+
+        references = virtual_machine.get(
+            "$VBDs",
+            virtual_machine.get("VBDs", []),
         )
-        if not references:
-            references = details.get(
-                "VDIs",
-                details.get("$VDIs", details.get("vdis", details.get("$vdis", []))),
-            )
-        if isinstance(references, (str, dict)):
-            references = [references]
 
-        for reference in references or []:
+        for reference in references:
             try:
-                child = (
-                    reference
-                    if isinstance(reference, dict) and len(reference) > 1
-                    else self._client.get_resource(reference)
+                vbd_uuid = self._reference_uuid(reference)
+                if not vbd_uuid:
+                    continue
+
+                vbd = self._client.get_resource(
+                    f"/VBDs/{vbd_uuid}"
                 )
-                vdi_reference = child.get("VDI", child.get("vdi", child))
-                vdi = (
-                    vdi_reference
-                    if isinstance(vdi_reference, dict) and len(vdi_reference) > 1
-                    else self._client.get_resource(vdi_reference)
+
+                if not vbd or vbd.get("is_cd_drive"):
+                    continue
+
+                vdi_reference = vbd.get(
+                    "VDI",
+                    vbd.get("vdi", ""),
                 )
-                if vdi:
-                    if "SR" in vdi:
-                        details.setdefault("SR", vdi["SR"])
-                    elif "sr" in vdi:
-                        details.setdefault("sr", vdi["sr"])
-                    for key in ("physical_utilisation", "virtual_size"):
-                        if isinstance(vdi.get(key), (int, float)):
-                            details.setdefault(key, vdi[key])
-                            break
-                    if details.get("SR") or details.get("sr"):
-                        break
+                vdi_uuid = self._reference_uuid(vdi_reference)
+
+                if not vdi_uuid:
+                    continue
+
+                vdi = self._client.get_resource(
+                    f"/VDIs/{vdi_uuid}"
+                )
+
+                if not vdi:
+                    continue
+
+                sr_reference = vdi.get(
+                    "$SR",
+                    vdi.get(
+                        "SR",
+                        vdi.get("sr", ""),
+                    ),
+                )
+
+                if sr_reference:
+                    details["$SR"] = sr_reference
+                    return details
+
             except ApiError:
                 continue
+
         return details
 
     @staticmethod
@@ -375,14 +414,24 @@ class XOProvider(InventoryProvider):
 
     @classmethod
     def _to_storage_repository(cls, item: dict) -> StorageRepository:
-        total_bytes = item.get("physical_size", 0)
-        used_bytes = item.get("physical_utilisation", 0)
+        total_bytes = item.get("size", item.get("physical_size", 0))
+        used_bytes = item.get(
+            "physical_usage",
+            item.get("physical_utilisation", 0),
+        )
+
+        if total_bytes <= 0 or used_bytes < 0:
+            total_bytes = 0
+            used_bytes = 0
+            free_bytes = 0
+        else:
+            free_bytes = max(total_bytes - used_bytes, 0)
 
         return StorageRepository(
             uuid=cls._object_uuid(item),
             name=item.get("name_label", ""),
-            type=item.get("type", item.get("sr_type", "")),
+            type=item.get("SR_type", item.get("type", "")),
             total_bytes=total_bytes,
             used_bytes=used_bytes,
-            free_bytes=max(total_bytes - used_bytes, 0),
+            free_bytes=free_bytes,
         )

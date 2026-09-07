@@ -145,12 +145,19 @@ class XOClient:
         return response if isinstance(response, dict) else {}
 
     def get_storage_repositories(self) -> list[dict]:
-        """Return storage repositories visible to the authenticated user."""
+        """Return complete storage repository representations."""
 
-        return self._get_collection(
+        srs = self._get_collection(
             "/srs",
-            "uuid,name_label,type,physical_size,physical_utilisation",
+            "uuid,name_label,type",
         )
+
+        repositories = []
+        for sr in srs:
+            detail = self.get_resource(sr)
+            repositories.append(detail if detail else sr)
+
+        return repositories
 
     def scan_storage_repository(self, sr_uuid: str):
         """Start an SR scan through the XO REST action endpoint."""
