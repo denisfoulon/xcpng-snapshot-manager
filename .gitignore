@@ -38,3 +38,4 @@ config/snapshot_archives/*
 
 config/snapshot_requests/*
 !config/snapshot_requests/.gitkeep
+reports/
