@@ -5,12 +5,16 @@
 <h1 align="center">XCP-ng Snapshot Manager</h1>
 
 <p align="center">
-The open-source compliance engine for XCP-ng snapshots.
+  Keep your XCP-ng snapshots under control.
+</p>
+
+<p align="center">
+  Audit, monitor and safely manage snapshot lifecycle across your XCP-ng infrastructure.
 </p>
 
 <p align="center">
 
-![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=flat-square\&logo=python\&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.12+-3776AB?style=flat-square&logo=python&logoColor=white)
 ![XCP-ng](https://img.shields.io/badge/XCP--ng-Compatible-2E8B57?style=flat-square)
 ![License](https://img.shields.io/github/license/DenisFoulon/xcpng-snapshot-manager?style=flat-square)
 ![Status](https://img.shields.io/badge/status-Stable-brightgreen?style=flat-square)
@@ -19,50 +23,158 @@ The open-source compliance engine for XCP-ng snapshots.
 
 ---
 
-## Overview
+## Why XCP-ng Snapshot Manager?
 
-**XCP-ng Snapshot Manager** is an open-source tool designed to audit, monitor and manage virtual machine snapshots across XCP-ng infrastructures.
+Snapshots are useful.
 
-Unlike generic administration tools, Snapshot Manager focuses exclusively on **Snapshots** and **Storage Repositories (SR)** to help administrators maintain healthy virtualization environments.
+Until they are forgotten.
 
-The project follows a simple execution workflow:
+An old snapshot can remain on a Storage Repository for weeks or months, consuming valuable space and making the virtualization environment harder to manage.
 
-```text
-Observe
-   ↓
-Evaluate
-   ↓
-Report
-   ↓
-Remediate
-   ↓
-Verify
-```
+In a production XCP-ng infrastructure, you may want to answer simple questions:
+
+- Which VMs have too many snapshots?
+- Which snapshots are getting old?
+- Which Storage Repositories are running out of space?
+- Are there orphaned snapshots?
+- Which snapshots should be removed?
+- Can remediation be automated without blindly deleting data?
+- Are scheduled snapshots actually being created?
+
+**XCP-ng Snapshot Manager** was built to answer these questions.
+
+It provides a focused snapshot lifecycle and compliance engine for XCP-ng infrastructures managed through Xen Orchestra.
+
+The goal is simple:
+
+> **Know what is happening. Decide what should happen. Automate it safely.**
 
 ---
 
-## Current Status
+## What does it do?
 
-Current release:
+The application follows a simple execution workflow:
 
-**v1.0.0**
+```text
+OBSERVE
+   ↓
+EVALUATE
+   ↓
+REPORT
+   ↓
+REMEDIATE
+   ↓
+VERIFY
+```
 
-Implemented:
+### Observe
 
-* Provider abstraction
-* Xen Orchestra REST connectivity
-* Typed configuration
-* Execution engine
-* Modular architecture
-* Check discovery engine
-* Pool, host, VM, snapshot and Storage Repository inventory
-* Configurable snapshot age, snapshot count and Storage Repository usage checks
-* Safe snapshot remediation modes: audit, dry-run and explicit execution
-* Disabled-by-default SR maintenance with automatic discovery, blacklist, cooldown,
-  task polling and before/after free-space state
-* File-based scheduled VM snapshots with success archives and failed-request marking
+Collects infrastructure information from Xen Orchestra:
 
-Configuration starts with the Xen Orchestra REST endpoint:
+- Pools
+- Hosts
+- Virtual machines
+- Snapshots
+- Storage Repositories
+
+### Evaluate
+
+Checks your snapshot and Storage Repository policies:
+
+- Snapshot age
+- Snapshot count
+- Missing descriptions
+- Orphan snapshots
+- Storage Repository usage
+
+### Report
+
+Provides useful information for administrators:
+
+- Console output
+- JSON data
+- HTML reports
+
+### Remediate
+
+When explicitly enabled, the application can:
+
+- Delete expired snapshots
+- Respect configured policies
+- Support blacklist/exclusion rules
+- Run in dry-run mode
+- Perform Storage Repository maintenance
+
+### Verify
+
+After remediation, the system can validate the resulting state instead of simply assuming that an operation succeeded.
+
+---
+
+## Typical use case
+
+Imagine a VM with the following snapshots:
+
+```text
+VM: production-db01
+
+Snapshot                     Age
+────────────────────────────────────
+pre-upgrade                  2 days
+before-maintenance           9 days
+migration-test              47 days
+old-test                   126 days
+```
+
+Your policy might say:
+
+```text
+Warning  → 7 days
+Critical → 30 days
+```
+
+The manager can identify the snapshots that require attention and report them.
+
+If remediation is enabled, it can then remove snapshots according to the configured policy.
+
+No blind `xe snapshot-uninstall` loop.
+
+No database.
+
+No web application.
+
+No daemon.
+
+Just a focused tool that can be executed when you need it.
+
+---
+
+# Quick Start
+
+The goal is to get your **first audit running in a few minutes**.
+
+## 1. Clone the project
+
+```bash
+git clone https://github.com/DenisFoulon/xcpng-snapshot-manager.git
+cd xcpng-snapshot-manager
+```
+
+## 2. Create a Python environment
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+## 3. Create your configuration
+
+```bash
+cp config/config.example.yaml config/config.yaml
+```
+
+Edit the Xen Orchestra connection:
 
 ```yaml
 provider:
@@ -75,109 +187,144 @@ xo:
   verify_ssl: false
 ```
 
-SR maintenance is opt-in. It discovers every SR automatically; only exceptional
-SR UUIDs need to be listed in the blacklist:
+Your local `config/config.yaml` is ignored by Git, so credentials are not committed to the repository.
 
-```yaml
-maintenance:
-  vacuum:
-    enabled: false
-    mode: audit
-    interval_hours: 24
-    min_interval_hours: 20
-    blacklist_sr_uuids: []
-    state_file: state/sr_maintenance.json
-    task_timeout_minutes: 30
-```
-
----
-
-## Roadmap
-
-| Version | Status | Description              |
-| ------- | ------ | ------------------------ |
-| v0.0.1  | ✅      | Bootstrap                |
-| v0.0.2  | ✅      | Configuration            |
-| v0.0.3  | ✅      | Provider connection      |
-| v0.0.4  | ✅      | Infrastructure inventory |
-| v0.0.5  | ✅      | Compliance checks        |
-| v0.0.6  | ✅      | Reporting                |
-| v0.0.7  | ✅      | Remediation              |
-| v0.0.8  | ✅      | Advanced SR vacuum      |
-| v0.0.9  | ✅      | Scheduled VM snapshots  |
-| v1.0.0  | ✅      | First stable release     |
-
----
-
-## Capabilities and future directions
-
-### Observe
-
-* Inventory collection
-* Snapshot discovery
-* Storage Repository discovery
-* Capacity collection
-
-### Evaluate
-
-* Snapshot age
-* Snapshot count
-* Missing descriptions
-* Orphan snapshots
-* Storage Repository usage
-
-### Report
-
-* Rich console output
-* JSON export
-* HTML reports
-
-### Remediate
-
-* Delete expired snapshots
-* Blacklist support
-* Dry-run mode
-* Storage reclaim
-* Scheduled SR vacuum with Storage Repository blacklist
-
-### Verify
-
-* Post-remediation validation
-* Compliance confirmation
-
-### SR maintenance (v0.0.8)
-
-SR maintenance discovers all Storage Repositories automatically. No manual SR
-inventory is required; exceptional SRs can be excluded through
-`blacklist_sr_uuids`.
-
-The application remains a one-shot command, suitable for execution through
-cron or a systemd timer. Interval and cooldown settings prevent duplicate scans.
-
-Target configuration:
-
-```yaml
-maintenance:
-  vacuum:
-    enabled: false
-    mode: audit
-    interval_hours: 24
-    min_interval_hours: 20
-    blacklist_sr_uuids: []
-    state_file: state/sr_maintenance.json
-    task_timeout_minutes: 30
-```
-
-### Scheduled snapshots (v0.0.9)
-
-Scheduled snapshot requests are individual text files. The command processes
-only `.txt` files and can be launched by cron:
+## 4. Run your first audit
 
 ```bash
-python3 src/snapshot_manager.py --run-scheduled-snapshots
+PYTHONPATH=src python3 src/snapshot_manager.py
 ```
 
-Example request file:
+That's it.
+
+You now have a snapshot compliance scan of your XCP-ng infrastructure.
+
+---
+
+# Run it automatically
+
+XCP-ng Snapshot Manager is intentionally designed as a **one-shot command**.
+
+That makes it easy to integrate with cron or a systemd timer.
+
+For example, a daily cron job:
+
+```cron
+0 2 * * * cd /opt/xcpng-snapshot-manager && /opt/xcpng-snapshot-manager/.venv/bin/python src/snapshot_manager.py >> /var/log/xcpng-snapshot-manager.log 2>&1
+```
+
+This gives you a lightweight daily snapshot compliance process without deploying another permanent service.
+
+---
+
+# Snapshot policies
+
+Snapshot policies are configurable.
+
+For example:
+
+```yaml
+compliance:
+  snapshot_age:
+    warning_days: 7
+    critical_days: 30
+
+  snapshot_count:
+    warning_count: 3
+    critical_count: 5
+```
+
+This allows administrators to define what "healthy" means for their environment rather than relying on hard-coded values.
+
+---
+
+# Template safety
+
+Virtual machine templates are excluded from snapshot management by default.
+
+```yaml
+snapshot_management:
+  include_templates: false
+```
+
+This is intentional.
+
+Templates can contain snapshots that are part of an operational workflow and should not automatically be treated like ordinary VM snapshots.
+
+If your environment requires template snapshots to be managed, this behaviour can be explicitly enabled:
+
+```yaml
+snapshot_management:
+  include_templates: true
+```
+
+---
+
+# Safe remediation
+
+Remediation is deliberately designed to be conservative.
+
+The recommended workflow is:
+
+```text
+AUDIT
+  ↓
+INSPECT
+  ↓
+DRY-RUN
+  ↓
+EXECUTE
+  ↓
+VERIFY
+```
+
+The manager should first tell you what it sees before being allowed to modify the infrastructure.
+
+This makes it suitable for environments where snapshot deletion must be predictable and controlled.
+
+---
+
+# Storage Repository monitoring
+
+Snapshots ultimately consume Storage Repository capacity.
+
+The manager therefore also monitors Storage Repository usage and can perform optional SR maintenance.
+
+SR maintenance is **disabled by default**.
+
+```yaml
+maintenance:
+  vacuum:
+    enabled: false
+    mode: audit
+    interval_hours: 24
+    min_interval_hours: 20
+    blacklist_sr_uuids: []
+    state_file: state/sr_maintenance.json
+    task_timeout_minutes: 30
+```
+
+All Storage Repositories are discovered automatically.
+
+You only need to list exceptional SRs in `blacklist_sr_uuids`.
+
+The maintenance mechanism also includes:
+
+- Automatic SR discovery
+- Blacklisting
+- Cooldown protection
+- Task polling
+- Timeout handling
+- Before/after free-space reporting
+- Persistent state
+
+---
+
+# Scheduled VM snapshots
+
+The project also supports simple file-based scheduled VM snapshots.
+
+A request can be represented by a text file:
 
 ```text
 2026-08-05 14:40
@@ -186,10 +333,31 @@ vm2
 vm*
 ```
 
-After a complete success, the request is moved to the archive directory as
-`.done.txt`. A partial or complete failure is renamed `.failed.txt` and the
-result of every VM is appended to the file. Failed files are never retried
-automatically by cron.
+The scheduled snapshot worker can then be launched by cron:
+
+```bash
+PYTHONPATH=src python3 src/snapshot_manager.py --run-scheduled-snapshots
+```
+
+Only `.txt` request files are processed.
+
+After a complete success, the request is archived as:
+
+```text
+.done.txt
+```
+
+If one or more snapshots fail, the request is renamed:
+
+```text
+.failed.txt
+```
+
+The result of every VM is appended to the request file.
+
+Failed requests are **not automatically retried**.
+
+Configuration:
 
 ```yaml
 snapshot_scheduling:
@@ -205,7 +373,90 @@ snapshot_scheduling:
 
 ---
 
-## Project Structure
+# Configuration
+
+The complete configuration is provided in:
+
+```text
+config/config.example.yaml
+```
+
+The configuration is deliberately file-based and easy to version or manage through standard configuration-management tools.
+
+Typical deployment:
+
+```text
+/opt/xcpng-snapshot-manager/
+├── config/
+│   ├── config.yaml
+│   └── snapshot_requests/
+├── src/
+├── reports/
+└── .venv/
+```
+
+---
+
+# Reports
+
+The manager is designed to provide both human-readable and machine-readable results.
+
+This makes it suitable for:
+
+- Manual administration
+- Cron jobs
+- Automation
+- Monitoring integration
+- Compliance reporting
+- Operational reviews
+
+---
+
+# Requirements
+
+- Python 3.12+
+- Xen Orchestra 5.x
+- XCP-ng
+- Xen Orchestra REST API enabled
+
+The application communicates with XCP-ng through Xen Orchestra rather than directly connecting to individual hosts.
+
+---
+
+# Architecture
+
+The project uses a modular architecture designed to keep infrastructure access, compliance logic and reporting separated.
+
+```text
+                    ┌─────────────────────┐
+                    │   Xen Orchestra     │
+                    │      REST API       │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │      Provider       │
+                    │     XOProvider      │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │     Inventory       │
+                    │ Pool / Host / VM /  │
+                    │ Snapshot / SR       │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │   Compliance Engine │
+                    └──────────┬──────────┘
+                               │
+                 ┌─────────────┼─────────────┐
+                 ▼             ▼             ▼
+             Reporting     Remediation   Maintenance
+```
+
+Project structure:
 
 ```text
 src/
@@ -220,90 +471,78 @@ src/
 
 ---
 
-## Requirements
+# Release history
 
-* Python 3.12+
-* Xen Orchestra 5.x
-* XCP-ng
-* REST API enabled
+The project has evolved incrementally, with each release adding one layer of functionality.
 
----
-
-## Installation
-
-```bash
-git clone https://github.com/DenisFoulon/xcpng-snapshot-manager.git
-
-cd xcpng-snapshot-manager
-
-python3 -m venv .venv
-
-source .venv/bin/activate
-
-pip install -r requirements.txt
-```
+| Version | Status | Description |
+|---|---|---|
+| v0.0.1 | ✅ | Bootstrap |
+| v0.0.2 | ✅ | Configuration |
+| v0.0.3 | ✅ | Provider connection |
+| v0.0.4 | ✅ | Infrastructure inventory |
+| v0.0.5 | ✅ | Compliance checks |
+| v0.0.6 | ✅ | Reporting |
+| v0.0.7 | ✅ | Remediation |
+| v0.0.8 | ✅ | Advanced SR vacuum |
+| v0.0.9 | ✅ | Scheduled VM snapshots |
+| **v1.0.0** | **✅** | **First stable release** |
 
 ---
 
-## Configuration
+# Current status
 
-Create a local configuration from the supplied example, then edit the Xen Orchestra credentials:
+**v1.0.0 — Stable**
 
-```bash
-cp config/config.example.yaml config/config.yaml
-```
+The first stable release provides:
 
-The local `config/config.yaml` is ignored by Git, so credentials are not committed.
+- Xen Orchestra REST connectivity
+- Provider abstraction
+- Typed configuration
+- Modular execution engine
+- Infrastructure inventory
+- Snapshot compliance checks
+- Storage Repository monitoring
+- Console, JSON and HTML reporting
+- Safe remediation modes
+- Template-aware snapshot management
+- Storage Repository maintenance
+- Scheduled VM snapshots
+- Cron-friendly one-shot execution
 
-```yaml
-provider:
-  type: xo
-
-xo:
-  url: https://xoa.example.com/rest/v0
-  username: admin@example.com
-  password: your_password
-  verify_ssl: false
-```
-
----
-
-## Run
-
-Standard compliance, reporting and remediation run:
-
-```bash
-python3 src/snapshot_manager.py
-```
-
-For the file-based scheduled snapshot worker (typically called by cron):
-
-```bash
-python3 src/snapshot_manager.py --run-scheduled-snapshots
-```
-
-Useful CLI options:
-
-```text
---config PATH       use a non-default YAML file
---version           print the installed version
---help              show all options
-```
+The project is intentionally focused.
 
 ---
 
-## Philosophy
+# Philosophy
 
-This project intentionally remains focused on a single objective:
+XCP-ng Snapshot Manager is **not** intended to become a complete XCP-ng administration platform.
+
+It focuses on one specific operational problem:
 
 > **Manage snapshots safely and efficiently.**
 
-It is **not** intended to become a full XCP-ng administration framework.
+Keeping the scope limited helps maintain:
 
-Keeping a limited scope helps maintain a clean architecture, predictable releases and long-term maintainability.
+- A clean architecture
+- Predictable behaviour
+- Easy deployment
+- Simple configuration
+- Maintainable code
+- Small operational footprint
+
+If you already operate XCP-ng and Xen Orchestra, the tool should be easy to understand, easy to test and easy to remove if it doesn't fit your environment.
 
 ---
 
-## License
+# Contributing
+
+Contributions, ideas, bug reports and improvements are welcome.
+
+If you operate XCP-ng in production and encounter a real-world snapshot management problem, feel free to open an issue and describe the use case.
+
+---
+
+# License
 
 MIT License.
